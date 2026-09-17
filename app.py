@@ -1,4 +1,5 @@
 import os
+import json
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
@@ -144,6 +145,12 @@ Provide:
 
 Explain briefly why.
 
+14. JOB SUMMARY
+Write a very short 1–2 sentence summary of the job.
+Include the job title, main purpose, and 2–4 key responsibilities.
+Maximum 40 words.
+Do not add opinions or unnecessary details.
+
 IMPORTANT PRINCIPLES:
 - Analyze the job, not the person.
 - Do not make a hiring decision.
@@ -152,12 +159,6 @@ IMPORTANT PRINCIPLES:
 - Distinguish explicit requirements from reasonable interpretations.
 - Keep the analysis job-related and evidence-based.
 - Make the output easy for a recruiter to review.
-
-14. JOB SUMMARY
-Write a very short 1–2 sentence summary of the job.
-Include the job title, main purpose, and 2–4 key responsibilities.
-Maximum 40 words.
-Do not add opinions or unnecessary details.
 
 JOB DESCRIPTION:
 
@@ -247,342 +248,178 @@ if candidate_file is not None:
 # ============================================================
 
 if candidate_file is not None:
-
     st.divider()
-
     st.header("🔎 Candidate Screening")
-
     st.write(
-        "Screen candidates against the job requirements using "
-        "a transparent, evidence-based scoring system."
+        "Screen candidates against the requirements extracted from the Job Description. "
+        "The JD determines what is assessed; the candidate data provides the evidence."
     )
 
     if st.button("🚀 Screen Candidates"):
-
-        # Required columns
-        required_columns = [
-            "Candidate ID",
-            "Name",
-            "Email",
-            "Degree",
-            "Skills",
-            "Experience (Years)",
-            "Knowledge",
-            "Competencies",
-            "City"
-        ]
-
-        missing_columns = [
-            col for col in required_columns
-            if col not in candidates_df.columns
-        ]
-
-        if missing_columns:
-
-            st.error(
-                "Missing columns: "
-                + ", ".join(missing_columns)
-            )
-
+        if not job_description.strip():
+            st.warning("Please analyze or paste a Job Description before screening candidates.")
         else:
-
-            # ------------------------------------------------
-            # Scoring criteria
-            # ------------------------------------------------
-
-            weights = {
-                "Skills": 30,
-                "Experience": 20,
-                "Knowledge": 15,
-                "Education": 10,
-                "Problem Solving": 10,
-                "Communication": 5,
-                "Competencies": 10
-            }
-
-            screening_results = []
-
-            # ------------------------------------------------
-            # Screen each candidate
-            # ------------------------------------------------
-
-            for _, candidate in candidates_df.iterrows():
-
-                skills = str(candidate["Skills"]).lower()
-                knowledge = str(candidate["Knowledge"]).lower()
-                competencies = str(
-                    candidate["Competencies"]
-                ).lower()
-
-                degree = str(candidate["Degree"]).lower()
-
-                experience = float(
-                    candidate["Experience (Years)"]
-                )
-
-                # --------------------------------------------
-                # Skills score
-                # --------------------------------------------
-
-                skill_points = 0
-
-                important_skills = [
-                    "google ads",
-                    "excel",
-                    "ga4",
-                    "digital marketing",
-                    "analytics"
-                ]
-
-                for skill in important_skills:
-
-                    if skill in skills:
-                        skill_points += 6
-
-                skill_score = min(skill_points, 30)
-
-                # --------------------------------------------
-                # Experience score
-                # --------------------------------------------
-
-                if experience >= 2:
-                    experience_score = 20
-
-                elif experience >= 1:
-                    experience_score = 17
-
-                elif experience >= 0.5:
-                    experience_score = 14
-
-                elif experience > 0:
-                    experience_score = 10
-
-                else:
-                    experience_score = 7
-
-                # --------------------------------------------
-                # Knowledge score
-                # --------------------------------------------
-
-                knowledge_terms = [
-                    "google ads",
-                    "campaign",
-                    "cpc",
-                    "ctr",
-                    "roas",
-                    "ga4",
-                    "conversion",
-                    "reporting",
-                    "optimization"
-                ]
-
-                knowledge_matches = sum(
-                    term in knowledge
-                    for term in knowledge_terms
-                )
-
-                knowledge_score = min(
-                    knowledge_matches * 2,
-                    15
-                )
-
-                # --------------------------------------------
-                # Education score
-                # --------------------------------------------
-
-                relevant_degrees = [
-                    "bba",
-                    "b.com",
-                    "commerce",
-                    "economics",
-                    "marketing",
-                    "business"
-                ]
-
-                education_score = 10 if any(
-                    degree_name in degree
-                    for degree_name in relevant_degrees
-                ) else 5
-
-                # --------------------------------------------
-                # Problem-solving score
-                # --------------------------------------------
-
-                problem_terms = [
-                    "problem solving",
-                    "analytical thinking",
-                    "analytical",
-                    "data analysis"
-                ]
-
-                problem_score = 10 if any(
-                    term in competencies or
-                    term in knowledge
-                    for term in problem_terms
-                ) else 5
-
-                # --------------------------------------------
-                # Communication score
-                # --------------------------------------------
-
-                communication_score = (
-                    5
-                    if "communication" in competencies
-                    else 3
-                )
-
-                # --------------------------------------------
-                # Competency score
-                # --------------------------------------------
-
-                competency_terms = [
-                    "teamwork",
-                    "attention to detail",
-                    "learning agility",
-                    "problem solving",
-                    "analytical thinking"
-                ]
-
-                competency_matches = sum(
-                    term in competencies
-                    for term in competency_terms
-                )
-
-                competency_score = min(
-                    competency_matches * 2,
-                    10
-                )
-
-                # --------------------------------------------
-                # Total score
-                # --------------------------------------------
-
-                total_score = (
-                    skill_score
-                    + experience_score
-                    + knowledge_score
-                    + education_score
-                    + problem_score
-                    + communication_score
-                    + competency_score
-                )
-
-                # --------------------------------------------
-                # Fit category
-                # --------------------------------------------
-
-                if total_score >= 85:
-                    fit = "Strong Match"
-
-                elif total_score >= 70:
-                    fit = "Potential Match"
-
-                elif total_score >= 50:
-                    fit = "Review"
-
-                else:
-                    fit = "Requirement Gap"
-
-                # --------------------------------------------
-                # WHY?
-                # --------------------------------------------
-
-                strengths = []
-
-                if "google ads" in skills:
-                    strengths.append("Google Ads")
-
-                if "excel" in skills:
-                    strengths.append("Excel")
-
-                if "ga4" in skills:
-                    strengths.append("GA4")
-
-                if "analytical thinking" in competencies:
-                    strengths.append("Analytical Thinking")
-
-                if "problem solving" in competencies:
-                    strengths.append("Problem Solving")
-
-                gaps = []
-
-                if "google ads" not in skills:
-                    gaps.append("Google Ads")
-
-                if "excel" not in skills:
-                    gaps.append("Excel")
-
-                if "ga4" not in skills:
-                    gaps.append("GA4")
-
-                if experience < 0.5:
-                    gaps.append("Limited experience")
-
-                if strengths:
-                    strength_text = ", ".join(strengths[:3])
-
-                else:
-                    strength_text = "Limited evidence"
-
-                if gaps:
-                    gap_text = ", ".join(gaps[:3])
-
-                else:
-                    gap_text = "No major gap identified"
-
-                why_text = (
-                    f"Strengths: {strength_text}. "
-                    f"Main gaps: {gap_text}."
-                )
-
-                screening_results.append({
-                    "Candidate ID": candidate["Candidate ID"],
-                    "Name": candidate["Name"],
-                    "Match %": total_score,
-                    "Fit": fit,
-                    "Skills": skill_score,
-                    "Experience": experience_score,
-                    "Knowledge": knowledge_score,
-                    "Education": education_score,
-                    "Problem Solving": problem_score,
-                    "Communication": communication_score,
-                    "Competencies": competency_score,
-                    "WHY": why_text
-                })
-
-            # ------------------------------------------------
-            # Create results DataFrame
-            # ------------------------------------------------
-
-            results_df = pd.DataFrame(
-                screening_results
-            )
-
-         # Sort highest score first
-            results_df = results_df.sort_values(
-                by="Match %",
-                ascending=False
-            ).reset_index(drop=True)
-
-            # Add rank number
-            results_df.insert(
-                0,
-                "Rank",
-                range(1, len(results_df) + 1)
-            )
-
-            # Save results so they remain available
-            st.session_state["results_df"] = results_df
-
-            # ------------------------------------------------
-            # Display screening results
-            # ------------------------------------------------
-
-            st.success("Candidates screened successfully!")
+            # Basic identity columns are required. Other candidate fields are allowed.
+            required_columns = ["Candidate ID", "Name"]
+            missing_columns = [
+                col for col in required_columns
+                if col not in candidates_df.columns
+            ]
+
+            if missing_columns:
+                st.error("Missing columns: " + ", ".join(missing_columns))
+            else:
+                with st.spinner("Building JD-driven screening criteria and evaluating candidates with Gemini..."):
+                    try:
+                        candidate_records = (
+                            candidates_df.fillna("").to_dict(orient="records")
+                        )
+
+                        screening_prompt = f"""
+You are the Candidate Screening Engine of Medhā-Cayanam AI, an explainable AI recruitment decision-support system.
+
+The Job Description is the SOURCE OF TRUTH for what should be assessed.
+Do not use a fixed or generic screening checklist.
+First derive the screening criteria from this specific Job Description, then evaluate every candidate against those same criteria.
+
+JOB DESCRIPTION:
+{job_description}
+
+CANDIDATE DATABASE:
+{json.dumps(candidate_records, ensure_ascii=False, default=str)}
+
+TASK:
+1. Extract the job-relevant requirements from the JD.
+2. Classify each important requirement as Must-Have, Nice-to-Have, or Not Clearly Specified.
+3. Convert the requirements into a practical screening scorecard. Suggested weights must total exactly 100.
+4. Evaluate EVERY candidate against the JD-derived criteria.
+5. For every criterion, use only evidence present in the candidate data.
+6. If evidence is missing, say "Not Demonstrated" rather than assuming the candidate lacks the capability.
+7. If the candidate data explicitly conflicts with a mandatory requirement, mark that requirement as "Does Not Meet" and explain the evidence.
+8. Distinguish "Not Demonstrated" from "Does Not Meet".
+9. Do not invent candidate experience, skills, education, certifications, or achievements.
+10. Do not use or infer protected characteristics such as race, ethnicity, religion, gender, age, disability, health, marital status, or similar attributes.
+11. Do not infer personality, intelligence, culture fit, or other non-job-related traits.
+12. Do not make the final hiring decision. The output is decision support for recruiter review.
+13. Keep the assessment traceable: explain the evidence behind important scores and gaps.
+
+SCORING:
+- Each criterion receives a score from 0 to 100.
+- Overall Match % is the weighted average using the JD-derived weights.
+- A missing resume field must not automatically mean the candidate fails a requirement.
+- For Must-Have requirements, separately report whether the evidence Meets, Partially Meets, Not Demonstrated, or Does Not Meet the requirement.
+- Use the overall score only as a summary of job-requirement alignment, not as an automatic hiring decision.
+
+Return ONLY valid JSON in this exact structure:
+{{
+  "screening_criteria": [
+    {{
+      "criterion": "string",
+      "category": "Knowledge | Skill | Ability | Experience | Education | Competency | Other",
+      "requirement_type": "Must-Have | Nice-to-Have | Not Clearly Specified",
+      "weight": 0,
+      "evidence_expected": "string"
+    }}
+  ],
+  "candidates": [
+    {{
+      "candidate_id": "string",
+      "name": "string",
+      "overall_match_percent": 0,
+      "overall_status": "Meets Requirements | Potential Match | Review Required | Requirement Gap",
+      "must_have_status": "All demonstrated | Some not demonstrated | Explicit gap identified | No must-haves specified",
+      "criteria_assessment": [
+        {{
+          "criterion": "string",
+          "score": 0,
+          "status": "Meets | Partially Meets | Not Demonstrated | Does Not Meet",
+          "evidence": "string"
+        }}
+      ],
+      "strengths": ["string"],
+      "gaps": ["string"],
+      "why": "string"
+    }}
+  ]
+}}
+
+IMPORTANT:
+- Include every candidate exactly once.
+- Use the same screening criteria for every candidate.
+- Screening criteria and weights must come from the JD, not from the candidate data.
+- Weights must total exactly 100.
+"""
+
+                        response = client.models.generate_content(
+                            model="gemini-3.6-flash",
+                            contents=screening_prompt
+                        )
+
+                        raw = response.text.strip()
+                        if raw.startswith("```"):
+                            raw = raw.replace("```json", "", 1).replace("```", "", 1).strip()
+
+                        screening_data = json.loads(raw)
+                        criteria = screening_data.get("screening_criteria", [])
+                        candidate_results = screening_data.get("candidates", [])
+
+                        if not criteria or not candidate_results:
+                            raise ValueError("Gemini returned incomplete screening data.")
+
+                        weight_total = sum(float(c.get("weight", 0)) for c in criteria)
+                        if abs(weight_total - 100) > 0.01:
+                            raise ValueError(
+                                f"JD-derived screening weights total {weight_total:.1f}, not 100."
+                            )
+
+                        # Show the actual criteria generated from this JD.
+                        st.subheader("🎯 JD-Derived Screening Criteria")
+                        criteria_df = pd.DataFrame(criteria)
+                        st.dataframe(criteria_df, use_container_width=True, hide_index=True)
+
+                        # Convert candidate assessments into a ranking table.
+                        screening_results = []
+                        for item in candidate_results:
+                            screening_results.append({
+                                "Candidate ID": item.get("candidate_id", ""),
+                                "Name": item.get("name", ""),
+                                "Match %": float(item.get("overall_match_percent", 0)),
+                                "Status": item.get("overall_status", "Review Required"),
+                                "Must-Have Status": item.get("must_have_status", ""),
+                                "Strengths": "; ".join(item.get("strengths", [])[:4]),
+                                "Gaps": "; ".join(item.get("gaps", [])[:4]),
+                                "WHY": item.get("why", ""),
+                                "Criteria Assessment": json.dumps(
+                                    item.get("criteria_assessment", []),
+                                    ensure_ascii=False
+                                )
+                            })
+
+                        results_df = pd.DataFrame(screening_results)
+                        results_df = results_df.sort_values(
+                            by="Match %", ascending=False
+                        ).reset_index(drop=True)
+                        results_df.insert(0, "Rank", range(1, len(results_df) + 1))
+
+                        st.session_state["results_df"] = results_df
+                        st.session_state["screening_criteria"] = criteria
+                        st.session_state["screening_raw"] = screening_data
+
+                        st.success(
+                            f"JD-driven screening completed for {len(results_df)} candidates."
+                        )
+
+                    except json.JSONDecodeError:
+                        st.error(
+                            "Gemini returned an invalid screening format. Please try screening again."
+                        )
+                    except Exception as e:
+                        st.error(f"Error during JD-driven candidate screening: {e}")
 
 # ============================================================
 # TOP CANDIDATES / RANKING
 # ============================================================
+
 
 if (
     candidate_file is not None
@@ -628,3 +465,73 @@ if (
         use_container_width=True,
         hide_index=True
     )
+
+if (
+    candidate_file is not None
+    and "results_df" in st.session_state
+):
+
+    results_df = st.session_state["results_df"]
+
+    st.divider()
+    st.subheader("🏆 Candidate Ranking")
+
+    total_candidates = len(results_df)
+
+    top_n = st.number_input(
+        "How many top candidates do you want to view?",
+        min_value=1,
+        max_value=total_candidates,
+        value=min(5, total_candidates),
+        step=1,
+        key="top_candidates_count"
+    )
+
+    top_n = int(top_n)
+    top_candidates = results_df.head(top_n)
+
+    st.write(
+        f"Showing Top {top_n} candidates out of {total_candidates} screened candidates."
+    )
+
+    st.dataframe(
+        top_candidates[
+            [
+                "Rank",
+                "Candidate ID",
+                "Name",
+                "Match %",
+                "Status",
+                "Must-Have Status",
+                "Strengths",
+                "Gaps",
+                "WHY"
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.subheader("🔍 Requirement-Level Evidence")
+    selected_name = st.selectbox(
+        "Select a candidate to inspect",
+        top_candidates["Name"].tolist(),
+        key="screening_candidate_detail"
+    )
+
+    selected = results_df[results_df["Name"] == selected_name].iloc[0]
+    st.write(f"**Overall Match:** {selected['Match %']:.1f}%")
+    st.write(f"**Status:** {selected['Status']}")
+    st.write(f"**Must-Have Status:** {selected['Must-Have Status']}")
+
+    try:
+        detail = json.loads(selected["Criteria Assessment"])
+        detail_df = pd.DataFrame(detail)
+        st.dataframe(detail_df, use_container_width=True, hide_index=True)
+    except Exception:
+        st.write(selected["Criteria Assessment"])
+
+    st.write(f"**Strengths:** {selected['Strengths'] or 'None explicitly demonstrated'}")
+    st.write(f"**Gaps:** {selected['Gaps'] or 'None explicitly identified'}")
+    st.write(f"**WHY:** {selected['WHY']}")
+
