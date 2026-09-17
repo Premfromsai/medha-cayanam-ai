@@ -153,6 +153,12 @@ IMPORTANT PRINCIPLES:
 - Keep the analysis job-related and evidence-based.
 - Make the output easy for a recruiter to review.
 
+14. JOB SUMMARY
+Write a very short 1–2 sentence summary of the job.
+Include the job title, main purpose, and 2–4 key responsibilities.
+Maximum 40 words.
+Do not add opinions or unnecessary details.
+
 JOB DESCRIPTION:
 
 {job_description}
