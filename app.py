@@ -15,12 +15,12 @@ client = genai.Client(
 
 # Page settings
 st.set_page_config(
-    page_title="Medhā-Cayanam AI",
-    page_icon="🧠",
+    page_title="Medha Talent Optimizer",
+    page_icon="📊",
     layout="wide"
 )
 
-st.title("🧠 Medhā-Cayanam AI")
+st.title("📊 )
 st.subheader("AI Recruitment Decision-Support Copilot")
 
 st.write(
