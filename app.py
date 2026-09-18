@@ -20,7 +20,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("📊 )
+st.title("Medha Talent Optimizer" )
 st.subheader("AI Recruitment Decision-Support Copilot")
 
 st.write(
